@@ -1,0 +1,212 @@
+@model X.PagedList.IPagedList<SalesSuite.Web.DTOs.TemaDto>
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+
+@{
+    ViewData["Title"] = "Foro - Temas";
+}
+
+<div class="container-fluid py-4">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold text-primary">
+                <i class="bi bi-chat-square-text me-2"></i>Foro de Discusión
+            </h1>
+            <p class="text-muted">Explora y participa en las conversaciones de la comunidad</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
+                <i class="bi bi-plus-circle me-2"></i>Crear Nuevo Tema
+            </a>
+        </div>
+    </div>
+
+    <!-- Mensajes de alerta -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Filtros de búsqueda -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-5">
+                    <label for="searchString" class="form-label fw-semibold">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="searchString" 
+                           name="searchString" 
+                           value="@ViewBag.SearchString" 
+                           placeholder="Buscar por título o contenido...">
+                </div>
+                <div class="col-md-4">
+                    <label for="categoriaId" class="form-label fw-semibold">
+                        <i class="bi bi-folder me-1"></i>Categoría
+                    </label>
+                    <select class="form-select" id="categoriaId" name="categoriaId" asp-items="ViewBag.Categorias">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel me-1"></i>Filtrar
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Listado de temas -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var tema in Model)
+            {
+                <div class="col-12 mb-3">
+                    <div class="card shadow-sm hover-shadow transition">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="d-flex align-items-start">
+                                        @if (tema.Fijado)
+                                        {
+                                            <span class="badge bg-warning text-dark me-2">
+                                                <i class="bi bi-pin-angle-fill"></i> Fijado
+                                            </span>
+                                        }
+                                        @if (tema.Cerrado)
+                                        {
+                                            <span class="badge bg-secondary me-2">
+                                                <i class="bi bi-lock-fill"></i> Cerrado
+                                            </span>
+                                        }
+                                        <span class="badge bg-primary me-2">
+                                            <i class="bi bi-folder"></i> @tema.CategoriaNombre
+                                        </span>
+                                    </div>
+                                    
+                                    <h5 class="card-title mt-2 mb-2">
+                                        <a asp-action="Details" asp-route-id="@tema.Id" class="text-decoration-none text-dark fw-bold">
+                                            @tema.Titulo
+                                        </a>
+                                    </h5>
+                                    
+                                    <p class="card-text text-muted small mb-2">
+                                        @if (tema.Contenido.Length > 150)
+                                        {
+                                            @tema.Contenido.Substring(0, 150)<text>...</text>
+                                        }
+                                        else
+                                        {
+                                            @tema.Contenido
+                                        }
+                                    </p>
+                                    
+                                    <div class="d-flex align-items-center text-muted small">
+                                        <i class="bi bi-person-circle me-1"></i>
+                                        <span class="me-3">@tema.UsuarioNombre</span>
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        <span class="me-3">@tema.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</span>
+                                        <i class="bi bi-eye me-1"></i>
+                                        <span class="me-3">@tema.NumeroVistas vistas</span>
+                                        <i class="bi bi-chat-dots me-1"></i>
+                                        <span>@tema.NumeroRespuestas respuestas</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3 d-flex align-items-center justify-content-end">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@tema.Id" class="btn btn-sm btn-outline-primary" title="Ver detalles">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@tema.Id" class="btn btn-sm btn-outline-warning" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@tema.Id" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Paginación -->
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Navegación de páginas">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchString = ViewBag.SearchString, categoriaId = ViewBag.CategoriaId }),
+                    new PagedListRenderOptions
+                    {
+                        LiElementClasses = new string[] { "page-item" },
+                        PageClasses = new string[] { "page-link" },
+                        UlElementClasses = new string[] { "pagination" },
+                        DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                        DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                        DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                        DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                        LinkToFirstPageFormat = "Primera",
+                        LinkToPreviousPageFormat = "Anterior",
+                        LinkToNextPageFormat = "Siguiente",
+                        LinkToLastPageFormat = "Última"
+                    })
+            </nav>
+        </div>
+
+        <!-- Información de paginación -->
+        <div class="text-center text-muted mt-3">
+            <small>
+                Mostrando @Model.FirstItemOnPage - @Model.LastItemOnPage de @Model.TotalItemCount temas
+            </small>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>No se encontraron temas.</strong>
+            @if (!string.IsNullOrEmpty(ViewBag.SearchString as string) || ViewBag.CategoriaId != null)
+            {
+                <p class="mb-0 mt-2">Intenta ajustar los filtros de búsqueda.</p>
+            }
+            else
+            {
+                <p class="mb-0 mt-2">¡Sé el primero en crear un tema!</p>
+            }
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .hover-shadow {
+            transition: all 0.3s ease;
+        }
+        .hover-shadow:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+            transform: translateY(-2px);
+        }
+        .transition {
+            transition: all 0.3s ease;
+        }
+    </style>
+}
