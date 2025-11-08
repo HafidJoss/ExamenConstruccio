@@ -1,0 +1,434 @@
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<foro.Web.DTOs.TemaListDto>
+
+@{
+ ViewData["Title"] = "Foro de Discusión";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+  .topic-row {
+      transition: all 0.3s ease;
+        }
+        
+        .topic-row:hover {
+   background-color: #f8f9fa;
+   transform: translateX(5px);
+        }
+        
+  .badge-pinned {
+  animation: pulse 2s infinite;
+        }
+
+    @@keyframes pulse {
+   0%, 100% {
+      opacity: 1;
+}
+  50% {
+    opacity: 0.7;
+   }
+   }
+
+  .stats-badge {
+   min-width: 45px;
+  text-align: center;
+        }
+     
+        .sidebar-sticky {
+   position: sticky;
+    top: 20px;
+        }
+    </style>
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Contenido Principal -->
+    <div class="col-lg-9">
+        <!-- Encabezado -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+            <h1 class="display-6 mb-1">
+  <i class="bi bi-chat-left-text text-primary"></i> Foro de Discusión
+        </h1>
+       <p class="text-muted mb-0">Comparte conocimientos y resuelve dudas</p>
+     </div>
+          @if (User.Identity?.IsAuthenticated == true)
+      {
+       <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
+       <i class="bi bi-plus-circle"></i> Nuevo Tema
+  </a>
+    }
+      else
+     {
+   <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-lg">
+   <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión para Publicar
+   </a>
+     }
+    </div>
+
+          <!-- Alertas -->
+     @if (TempData["Success"] != null)
+   {
+  <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+  <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    }
+   @if (TempData["Error"] != null)
+ {
+     <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+     <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+   <button type="button" class="btn-close" data-bsdismiss="alert"></button>
+  </div>
+            }
+
+  <!-- Filtros Mejorados -->
+     <div class="card shadow-sm mb-4">
+    <div class="card-body">
+    <form asp-action="Index" method="get" id="filterForm">
+       <div class="row g-3">
+  <div class="col-md-6">
+      <label class="form-label fw-bold">
+    <i class="bi bi-search"></i> Buscar
+    </label>
+    <input type="text" 
+      class="form-control form-control-lg" 
+     name="searchString" 
+      placeholder="Buscar por título o contenido..." 
+    value="@ViewBag.SearchString"
+         autocomplete="off">
+    </div>
+         <div class="col-md-4">
+    <label class="form-label fw-bold">
+    <i class="bi bi-folder"></i> Categoría
+  </label>
+  <select class="form-select form-select-lg" name="categoriaId">
+    <option value="">?? Todas las categorías</option>
+     @if (ViewBag.Categorias != null)
+     {
+      foreach (var item in ViewBag.Categorias)
+      {
+   <option value="@item.Value" selected="@(item.Selected)">
+        @item.Text
+      </option>
+   }
+     }
+     </select>
+  </div>
+  <div class="col-md-2 d-flex align-items-end gap-2">
+       <button type="submit" class="btn btn-primary flex-grow-1">
+      <i class="bi bi-funnel-fill"></i>
+    </button>
+      <a asp-action="Index" class="btn btn-outline-secondary" title="Limpiar filtros">
+  <i class="bi bi-x-lg"></i>
+       </a>
+      </div>
+     </div>
+    </form>
+   </div>
+  </div>
+
+          <!-- Tabla de Temas con DataTables -->
+      <div class="card shadow-sm">
+     <div class="card-header bg-primary text-white">
+       <div class="d-flex justify-content-between align-items-center">
+       <h5 class="mb-0">
+  <i class="bi bi-list-ul"></i> 
+    @if (Model != null && Model.Any())
+      {
+   @($"Temas ({Model.TotalItemCount})")
+ }
+     else
+  {
+   @("Temas")
+      }
+   </h5>
+   <div class="btn-group btn-group-sm" role="group">
+     <button type="button" class="btn btn-light" id="viewList">
+       <i class="bi bi-list-ul"></i>
+    </button>
+     <button type="button" class="btn btn-outline-light" id="viewGrid">
+     <i class="bi bi-grid-3x3"></i>
+    </button>
+      </div>
+      </div>
+      </div>
+        
+    <div class="card-body p-0">
+         @if (Model != null && Model.Any())
+      {
+   <div class="table-responsive">
+  <table class="table table-hover mb-0" id="temasTable">
+   <thead class="table-light">
+       <tr>
+     <th style="width: 50%;">
+      <i class="bi bi-chat-text"></i> Tema
+      </th>
+  <th style="width: 20%;" class="text-center">
+  <i class="bi bi-folder"></i> Categoría
+      </th>
+    <th style="width: 15%;" class="text-center">
+   <i class="bi bi-person"></i> Autor
+    </th>
+   <th style="width: 15%;" class="text-center">
+   <i class="bi bi-bar-chart"></i> Estadísticas
+    </th>
+    </tr>
+      </thead>
+     <tbody>
+   @foreach (var tema in Model)
+         {
+       <tr class="topic-row" data-href="@Url.Action("Details", "Temas", new { id = tema.Id })" style="cursor: pointer;">
+      <td>
+  <div class="d-flex align-items-start">
+     <div class="flex-grow-1">
+      <div class="mb-1">
+  @if (tema.Fijado)
+{
+        <span class="badge bg-warning text-dark badge-pinned me-1">
+    <i class="bi bi-pin-fill"></i> Fijado
+ </span>
+     }
+   @if (tema.Cerrado)
+       {
+   <span class="badge bg-secondary me-1">
+<i class="bi bi-lock-fill"></i> Cerrado
+        </span>
+        }
+   </div>
+         <h6 class="mb-1">
+    <a asp-action="Details" asp-route-id="@tema.Id" class="text-decoration-none text-dark fw-bold">
+    @tema.Titulo
+        </a>
+  </h6>
+       <p class="mb-0 small text-muted text-truncate" style="max-width: 500px;">
+      @tema.Contenido
+      </p>
+       </div>
+      </div>
+   </td>
+    <td class="text-center align-middle">
+      <span class="badge bg-light text-dark border">
+    <i class="bi bi-folder"></i> @tema.CategoriaNombre
+    </span>
+   </td>
+   <td class="text-center align-middle">
+   <div class="small">
+    <i class="bi bi-person-circle"></i><br>
+       <strong>@tema.UsuarioNombre</strong>
+      </div>
+     </td>
+ <td class="text-center align-middle">
+  <div class="d-flex justify-content-center gap-2 flex-wrap">
+      <span class="badge bg-primary stats-badge" title="Mensajes">
+  <i class="bi bi-chat-dots"></i> @tema.NumeroMensajes
+         </span>
+   <span class="badge bg-info stats-badge" title="Vistas">
+   <i class="bi bi-eye"></i> @tema.Vistas
+       </span>
+     </div>
+    <div class="small text-muted mt-1">
+   @{
+      var timeAgo = DateTime.UtcNow - tema.FechaUltimaActividad;
+      if (timeAgo.TotalDays >= 1)
+     {
+       <span title="@tema.FechaUltimaActividad.ToString("dd/MM/yyyy HH:mm")">
+   Hace @((int)timeAgo.TotalDays)d
+    </span>
+     }
+   else if (timeAgo.TotalHours >= 1)
+      {
+<span title="@tema.FechaUltimaActividad.ToString("dd/MM/yyyy HH:mm")">
+        Hace @((int)timeAgo.TotalHours)h
+    </span>
+       }
+      else
+  {
+     <span title="@tema.FechaUltimaActividad.ToString("dd/MM/yyyy HH:mm")">
+       Hace @((int)timeAgo.TotalMinutes)m
+    </span>
+    }
+       }
+       </div>
+    </td>
+      </tr>
+         }
+    </tbody>
+  </table>
+    </div>
+   }
+         else
+            {
+ <div class="text-center py-5">
+  <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+   <h4 class="mt-3 text-muted">No hay temas disponibles</h4>
+     <p class="text-muted">Sé el primero en crear un tema en el foro</p>
+      @if (User.Identity?.IsAuthenticated == true)
+     {
+        <a asp-action="Create" class="btn btn-primary mt-3">
+    <i class="bi bi-plus-circle"></i> Crear Primer Tema
+    </a>
+  }
+    </div>
+       }
+     </div>
+
+ <!-- Paginación (sin DataTables) -->
+      @if (Model != null && Model.PageCount > 1)
+   {
+ <div class="card-footer">
+     <nav aria-label="Paginación de temas">
+  <ul class="pagination justify-content-center">
+            @if (Model.HasPreviousPage)
+             {
+     <li class="page-item">
+        <a class="page-link" href="@Url.Action("Index", new { page = 1, searchString = ViewBag.SearchString, categoriaId = ViewBag.CategoriaId })">««</a>
+     </li>
+  <li class="page-item">
+      <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1, searchString = ViewBag.SearchString, categoriaId = ViewBag.CategoriaId })">«</a>
+ </li>
+             }
+  
+            @for (int i = 1; i <= Model.PageCount; i++)
+           {
+         if (i == Model.PageNumber)
+              {
+                   <li class="page-item active">
+   <span class="page-link">@i</span>
+   </li>
+       }
+            else if (i <= 3 || i >= Model.PageCount - 2 || Math.Abs(i - Model.PageNumber) <= 2)
+{
+    <li class="page-item">
+         <a class="page-link" href="@Url.Action("Index", new { page = i, searchString = ViewBag.SearchString, categoriaId = ViewBag.CategoriaId })">@i</a>
+    </li>
+    }
+               else if (i == 4 || i == Model.PageCount - 3)
+       {
+     <li class="page-item disabled">
+        <span class="page-link">...</span>
+        </li>
+  }
+       }
+  
+               @if (Model.HasNextPage)
+                {
+    <li class="page-item">
+    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1, searchString = ViewBag.SearchString, categoriaId = ViewBag.CategoriaId })">»</a>
+            </li>
+             <li class="page-item">
+   <a class="page-link" href="@Url.Action("Index", new { page = Model.PageCount, searchString = ViewBag.SearchString, categoriaId = ViewBag.CategoriaId })">»»</a>
+          </li>
+                   }
+         </ul>
+  </nav>
+  </div>
+       }
+  </div>
+    </div>
+
+      <!-- Sidebar Derecho -->
+  <div class="col-lg-3">
+   <div class="sidebar-sticky">
+  <!-- Panel de Usuario -->
+    <div class="mb-4">
+    @await Component.InvokeAsync("UserPanel")
+     </div>
+
+      <!-- Estadísticas -->
+   <div class="mb-4">
+      @await Component.InvokeAsync("ForumStats")
+    </div>
+
+  <!-- Temas Recientes -->
+  <div class="mb-4">
+     @await Component.InvokeAsync("RecentTopics", new { count = 5 })
+     </div>
+
+   <!-- Ayuda Rápida -->
+   <div class="card shadow-sm">
+    <div class="card-header bg-light">
+   <h6 class="mb-0">
+     <i class="bi bi-question-circle"></i> Ayuda Rápida
+    </h6>
+</div>
+       <div class="card-body">
+       <ul class="list-unstyled small">
+      <li class="mb-2">
+   <i class="bi bi-check-circle text-success"></i> 
+    <strong>Busca</strong> antes de preguntar
+       </li>
+ <li class="mb-2">
+    <i class="bi bi-check-circle text-success"></i> 
+       <strong>Sé respetuoso</strong> con otros usuarios
+     </li>
+   <li class="mb-2">
+   <i class="bi bi-check-circle text-success"></i> 
+ <strong>Usa</strong> títulos descriptivos
+        </li>
+     <li class="mb-2">
+       <i class="bi bi-check-circle text-success"></i> 
+    <strong>Marca</strong> la solución si te ayudaron
+      </li>
+   </ul>
+       </div>
+            </div>
+   </div>
+    </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+  
+    <script>
+        $(document).ready(function() {
+    // Configurar DataTables (opcional, ya tenemos paginación de servidor)
+         // Si quieres búsqueda y orden del lado del cliente, descomenta esto:
+            /*
+        $('#temasTable').DataTable({
+ "language": {
+          "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+  },
+         "pageLength": 10,
+  "order": [[3, "desc"]],
+ "columnDefs": [
+       { "orderable": false, "targets": 3 }
+     ]
+     });
+      */
+
+   // Click en fila para ir a detalles
+   $('.topic-row').click(function(e) {
+ if (!$(e.target).is('a')) {
+      window.location = $(this).data('href');
+       }
+     });
+
+      // Cambio de vista (lista/grid) - placeholder
+       $('#viewList').click(function() {
+    $(this).removeClass('btn-outline-light').addClass('btn-light');
+  $('#viewGrid').removeClass('btn-light').addClass('btn-outline-light');
+       // Aquí implementarías el cambio de vista
+       });
+
+       $('#viewGrid').click(function() {
+     $(this).removeClass('btn-outline-light').addClass('btn-light');
+   $('#viewList').removeClass('btn-light').addClass('btn-outline-light');
+    // Aquí implementarías el cambio de vista
+     });
+
+   // Tooltips de Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+ return new bootstrap.Tooltip(tooltipTriggerEl);
+   });
+   });
+    </script>
+}

@@ -1,0 +1,130 @@
+@model foro.Web.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 col-lg-5">
+  <div class="card shadow">
+      <div class="card-header bg-primary text-white text-center">
+        <h3><i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión</h3>
+ </div>
+<div class="card-body p-4">
+   <form asp-action="Login" method="post">
+   <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        
+        <input type="hidden" asp-for="ReturnUrl" />
+
+   <div class="mb-3">
+          <label asp-for="Email" class="form-label"></label>
+        <div class="input-group">
+  <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+   <input asp-for="Email" class="form-control" placeholder="tu@email.com" autofocus />
+     </div>
+      <span asp-validation-for="Email" class="text-danger small"></span>
+          </div>
+
+  <div class="mb-3">
+    <label asp-for="Password" class="form-label"></label>
+   <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+ <input asp-for="Password" class="form-control" placeholder="••••••••" />
+          <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+   <i class="bi bi-eye" id="toggleIcon"></i>
+    </button>
+    </div>
+          <span asp-validation-for="Password" class="text-danger small"></span>
+ </div>
+
+     <div class="mb-3 form-check">
+      <input asp-for="RememberMe" class="form-check-input" />
+      <label asp-for="RememberMe" class="form-check-label"></label>
+     </div>
+
+      <div class="d-grid gap-2 mb-3">
+<button type="submit" class="btn btn-primary btn-lg">
+        <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+     </button>
+       </div>
+
+  <div class="text-center">
+       <p class="mb-0">
+      ¿No tienes cuenta? 
+      <a asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-decoration-none">
+       <strong>Regístrate aquí</strong>
+ </a>
+  </p>
+     </div>
+</form>
+    </div>
+   <div class="card-footer text-center text-muted">
+       <small>
+  <i class="bi bi-shield-lock"></i> Tu información está protegida
+   </small>
+ </div>
+       </div>
+
+    <!-- Información de usuario demo -->
+            @if (Context.Request.Host.Host.Contains("localhost"))
+       {
+  <div class="alert alert-info mt-3">
+        <strong><i class="bi bi-info-circle"></i> Usuarios de Prueba:</strong>
+      <ul class="mb-0 mt-2">
+  <li><strong>Admin:</strong> admin@foro.com / Admin@123</li>
+        <li><strong>Usuario:</strong> Crear cuenta nueva</li>
+ </ul>
+         </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+  @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+  // Toggle mostrar/ocultar contraseña
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const password = document.querySelector('input[name="Password"]');
+  const icon = document.getElementById('toggleIcon');
+  
+    if (password.type === 'password') {
+    password.type = 'text';
+           icon.classList.remove('bi-eye');
+ icon.classList.add('bi-eye-slash');
+     } else {
+ password.type = 'password';
+   icon.classList.remove('bi-eye-slash');
+           icon.classList.add('bi-eye');
+ }
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+  .card {
+  border: none;
+      border-radius: 15px;
+ }
+
+      .card-header {
+            border-radius: 15px 15px 0 0 !important;
+      padding: 1.5rem;
+  }
+
+   .input-group-text {
+    background-color: #f8f9fa;
+    }
+
+  .form-control:focus {
+       border-color: #0d6efd;
+     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+    </style>
+}

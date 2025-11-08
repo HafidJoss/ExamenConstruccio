@@ -1,0 +1,288 @@
+@model foro.Web.DTOs.TemaCreateDto
+
+@{
+ ViewData["Title"] = "Crear Nuevo Tema";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+      <div class="card shadow">
+     <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+      <i class="bi bi-plus-circle"></i> Crear Nuevo Tema
+      </h3>
+      </div>
+           <div class="card-body">
+  <form asp-action="Create" method="post" id="formCrearTema">
+      <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <div class="mb-4">
+        <label asp-for="Titulo" class="form-label fw-bold">
+       <i class="bi bi-chat-quote"></i> Título del Tema
+               </label>
+        <input asp-for="Titulo" 
+     class="form-control form-control-lg" 
+          placeholder="Ingrese un título descriptivo para el tema"
+     id="inputTitulo" />
+           <span asp-validation-for="Titulo" class="text-danger small"></span>
+          <div class="form-text">
+    <span id="contadorTitulo">0</span>/250 caracteres
+            </div>
+      </div>
+
+  <div class="mb-4">
+         <label asp-for="CategoriaId" class="form-label fw-bold">
+       <i class="bi bi-folder"></i> Categoría
+                </label>
+   <select asp-for="CategoriaId" 
+        class="form-select form-select-lg" 
+   asp-items="ViewBag.Categorias"
+           id="selectCategoria">
+     <option value="">-- Seleccione una categoría --</option>
+    </select>
+     <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+      </div>
+
+       <div class="mb-4">
+       <label asp-for="Contenido" class="form-label fw-bold">
+       <i class="bi bi-file-text"></i> Contenido del Mensaje
+   </label>
+          <textarea asp-for="Contenido" 
+     class="form-control" 
+        rows="12" 
+ placeholder="Escriba el contenido de su tema aquí..."
+          id="textareaContenido"></textarea>
+    <span asp-validation-for="Contenido" class="text-danger small"></span>
+             <div class="form-text">
+            <span id="contadorContenido">0</span>/5000 caracteres
+              </div>
+           </div>
+
+             <div class="alert alert-info" role="alert">
+            <i class="bi bi-lightbulb"></i>
+         <strong>Consejo:</strong> Asegúrese de que el título sea claro y descriptivo. 
+          El contenido se guardará como el primer mensaje del tema.
+            </div>
+
+         <!-- Botones -->
+             <div class="d-grid gap-2 d-md-flex justify-content-md-between mb-3">
+        <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#previewModal">
+          <i class="bi bi-eye"></i> Vista Previa
+     </button>
+             <div>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-lg me-2">
+         <i class="bi bi-x-circle"></i> Cancelar
+      </a>
+            <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
+   <i class="bi bi-save"></i> Crear Tema
+      </button>
+  </div>
+     </div>
+ </form>
+  </div>
+ </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Vista Previa -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+ <div class="modal-header bg-primary text-white">
+         <h5 class="modal-title" id="previewModalLabel">
+      <i class="bi bi-eye"></i> Vista Previa del Tema
+                </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+         <div class="modal-body">
+         <div class="card">
+        <div class="card-header">
+    <h4 id="previewTitulo" class="mb-0">Título del tema</h4>
+           </div>
+           <div class="card-body">
+    <div class="mb-3">
+     <span class="badge bg-info" id="previewCategoria">Categoría</span>
+          <span class="badge bg-secondary">
+  <i class="bi bi-person"></i> Usuario Actual
+         </span>
+            <span class="badge bg-secondary">
+   <i class="bi bi-calendar3"></i> <span id="previewFecha"></span>
+       </span>
+      </div>
+           <hr>
+     <div id="previewContenido" class="preview-content">
+           Contenido del mensaje
+    </div>
+   </div>
+  </div>
+      </div>
+            <div class="modal-footer">
+     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+ 
+    <script>
+   document.addEventListener('DOMContentLoaded', function() {
+   // Referencias a elementos
+     const formCrearTema = document.getElementById('formCrearTema');
+   const inputTitulo = document.getElementById('inputTitulo');
+        const selectCategoria = document.getElementById('selectCategoria');
+       const textareaContenido = document.getElementById('textareaContenido');
+      const btnSubmit = document.getElementById('btnSubmit');
+    const contadorTitulo = document.getElementById('contadorTitulo');
+        const contadorContenido = document.getElementById('contadorContenido');
+
+  // Elementos del preview
+            const previewTitulo = document.getElementById('previewTitulo');
+          const previewCategoria = document.getElementById('previewCategoria');
+            const previewContenido = document.getElementById('previewContenido');
+          const previewFecha = document.getElementById('previewFecha');
+
+    // Actualizar contadores de caracteres
+            inputTitulo.addEventListener('input', function() {
+       contadorTitulo.textContent = this.value.length;
+              actualizarPreview();
+            });
+
+ textareaContenido.addEventListener('input', function() {
+                contadorContenido.textContent = this.value.length;
+        actualizarPreview();
+         });
+
+     selectCategoria.addEventListener('change', actualizarPreview);
+
+          // Función para actualizar vista previa
+     function actualizarPreview() {
+           // Actualizar título
+     const titulo = inputTitulo.value.trim() || 'Título del tema';
+                previewTitulo.textContent = titulo;
+
+                // Actualizar categoría
+       const categoriaSeleccionada = selectCategoria.options[selectCategoria.selectedIndex];
+      const categoriaNombre = categoriaSeleccionada.value ? categoriaSeleccionada.text : 'Sin categoría';
+                previewCategoria.textContent = categoriaNombre;
+
+      // Actualizar contenido
+      const contenido = textareaContenido.value.trim() || 'Contenido del mensaje';
+        previewContenido.innerHTML = contenido.replace(/\n/g, '<br>');
+
+    // Actualizar fecha (fecha actual)
+      const ahora = new Date();
+     const fechaFormateada = ahora.toLocaleDateString('es-ES', {
+      year: 'numeric',
+             month: '2-digit',
+          day: '2-digit',
+  hour: '2-digit',
+             minute: '2-digit'
+      });
+      previewFecha.textContent = fechaFormateada;
+            }
+
+     // Validación del lado del cliente antes de enviar
+            formCrearTema.addEventListener('submit', function(event) {
+      let isValid = true;
+      let mensajesError = [];
+
+     // Limpiar mensajes de error previos
+  document.querySelectorAll('.field-validation-error').forEach(el => {
+            el.textContent = '';
+    el.classList.remove('field-validation-error');
+      el.classList.add('field-validation-valid');
+     });
+
+      // Validar título
+   const titulo = inputTitulo.value.trim();
+           if (titulo.length === 0) {
+  mensajesError.push('El título es obligatorio');
+ isValid = false;
+      } else if (titulo.length < 5) {
+   mensajesError.push('El título debe tener al menos 5 caracteres');
+    isValid = false;
+} else if (titulo.length > 250) {
+         mensajesError.push('El título no puede exceder 250 caracteres');
+         isValid = false;
+                }
+
+            // Validar categoría
+         if (!selectCategoria.value) {
+         mensajesError.push('Debe seleccionar una categoría');
+        isValid = false;
+    }
+
+             // Validar contenido
+      const contenido = textareaContenido.value.trim();
+            if (contenido.length === 0) {
+            mensajesError.push('El contenido es obligatorio');
+            isValid = false;
+       } else if (contenido.length < 10) {
+                    mensajesError.push('El contenido debe tener al menos 10 caracteres');
+        isValid = false;
+ } else if (contenido.length > 5000) {
+ mensajesError.push('El contenido no puede exceder 5000 caracteres');
+   isValid = false;
+            }
+
+                // Si hay errores, mostrarlos y prevenir envío
+       if (!isValid) {
+               event.preventDefault();
+     
+    // Mostrar errores en un alert
+               Swal.fire({
+         icon: 'error',
+   title: 'Errores de Validación',
+     html: '<ul class="text-start">' + mensajesError.map(m => '<li>' + m + '</li>').join('') + '</ul>',
+              confirmButtonText: 'Entendido'
+  });
+
+  return false;
+              }
+
+                // Deshabilitar botón de submit para evitar doble clic
+        btnSubmit.disabled = true;
+btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creando...';
+         });
+
+            // Inicializar preview con fecha actual
+          actualizarPreview();
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        .preview-content {
+  background-color: #f8f9fa;
+      padding: 1.5rem;
+       border-radius: 0.375rem;
+  min-height: 200px;
+       white-space: pre-wrap;
+word-wrap: break-word;
+    line-height: 1.6;
+     }
+
+        #contadorTitulo,
+        #contadorContenido {
+       font-weight: bold;
+            color: #0d6efd;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+      }
+    </style>
+}

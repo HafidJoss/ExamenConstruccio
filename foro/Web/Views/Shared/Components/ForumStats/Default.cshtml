@@ -1,0 +1,67 @@
+@model foro.Web.ViewComponents.ForumStatsViewModel
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+ <h6 class="mb-0">
+  <i class="bi bi-bar-chart"></i> Estadísticas del Foro
+   </h6>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+        <!-- Total Temas -->
+     <div class="col-6">
+     <div class="text-center p-3 bg-primary bg-opacity-10 rounded">
+       <i class="bi bi-chat-left-text text-primary" style="font-size: 2rem;"></i>
+<h3 class="mb-0 mt-2">@Model.TotalTemas</h3>
+<p class="mb-0 small text-muted">Temas</p>
+      </div>
+ </div>
+
+    <!-- Total Mensajes -->
+      <div class="col-6">
+       <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+  <i class="bi bi-chat-dots text-success" style="font-size: 2rem;"></i>
+  <h3 class="mb-0 mt-2">@Model.TotalMensajes</h3>
+ <p class="mb-0 small text-muted">Mensajes</p>
+      </div>
+   </div>
+
+<!-- Total Usuarios -->
+ <div class="col-6">
+   <div class="text-center p-3 bg-info bg-opacity-10 rounded">
+   <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
+   <h3 class="mb-0 mt-2">@Model.TotalUsuarios</h3>
+      <p class="mb-0 small text-muted">Usuarios</p>
+  </div>
+    </div>
+
+   <!-- Total Categorías -->
+      <div class="col-6">
+        <div class="text-center p-3 bg-warning bg-opacity-10 rounded">
+    <i class="bi bi-folder text-warning" style="font-size: 2rem;"></i>
+    <h3 class="mb-0 mt-2">@Model.TotalCategorias</h3>
+ <p class="mb-0 small text-muted">Categorías</p>
+  </div>
+            </div>
+ </div>
+
+        <hr class="my-3">
+
+   <!-- Actividad de Hoy -->
+  <div class="text-center">
+   <p class="mb-2 small text-muted">
+    <i class="bi bi-calendar-day"></i> Actividad de Hoy
+   </p>
+      <div class="d-flex justify-content-around">
+      <div>
+    <span class="badge bg-primary">@Model.TemasHoy</span>
+ <small class="text-muted d-block">Temas</small>
+     </div>
+  <div>
+       <span class="badge bg-success">@Model.MensajesHoy</span>
+    <small class="text-muted d-block">Mensajes</small>
+       </div>
+    </div>
+      </div>
+    </div>
+</div>

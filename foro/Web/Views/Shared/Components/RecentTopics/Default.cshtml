@@ -1,0 +1,76 @@
+@model IEnumerable<foro.Domain.Entities.Tema>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+ <h6 class="mb-0">
+      <i class="bi bi-clock-history"></i> Temas Recientes
+        </h6>
+    </div>
+    <div class="list-group list-group-flush">
+        @if (Model != null && Model.Any())
+    {
+ foreach (var tema in Model)
+    {
+ <a asp-controller="Temas" asp-action="Details" asp-route-id="@tema.Id" 
+   class="list-group-item list-group-item-action">
+<div class="d-flex w-100 justify-content-between align-items-start">
+      <div class="flex-grow-1">
+    <h6 class="mb-1 text-truncate" style="max-width: 250px;">
+      @if (tema.Fijado)
+      {
+     <i class="bi bi-pin-fill text-warning" title="Fijado"></i>
+        }
+     @tema.Titulo
+        </h6>
+    <p class="mb-1 small text-muted">
+       <i class="bi bi-folder"></i> @tema.Categoria?.Nombre
+    </p>
+     <p class="mb-0 small text-muted">
+      <i class="bi bi-person"></i> @tema.Usuario?.Nombre
+         </p>
+        </div>
+  <div class="text-end">
+    <span class="badge bg-primary rounded-pill" title="Mensajes">
+  @tema.Mensajes?.Count ?? 0
+ </span>
+  </div>
+    </div>
+          <div class="mt-2 small text-muted">
+      <i class="bi bi-clock"></i> 
+      @{
+     var timeSpan = DateTime.UtcNow - tema.FechaCreacion;
+       if (timeSpan.TotalDays >= 1)
+  {
+       @($"Hace {(int)timeSpan.TotalDays} día(s)")
+       }
+      else if (timeSpan.TotalHours >= 1)
+   {
+       @($"Hace {(int)timeSpan.TotalHours} hora(s)")
+     }
+     else if (timeSpan.TotalMinutes >= 1)
+         {
+      @($"Hace {(int)timeSpan.TotalMinutes} minuto(s)")
+    }
+  else
+        {
+  @("Hace unos segundos")
+    }
+      }
+       </div>
+     </a>
+  }
+   }
+   else
+  {
+            <div class="list-group-item text-center text-muted py-4">
+       <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+     <p class="mb-0 mt-2">No hay temas recientes</p>
+ </div>
+     }
+    </div>
+    <div class="card-footer text-center bg-light">
+        <a asp-controller="Temas" asp-action="Index" class="btn btn-sm btn-outline-primary">
+       <i class="bi bi-list-ul"></i> Ver Todos los Temas
+ </a>
+    </div>
+</div>

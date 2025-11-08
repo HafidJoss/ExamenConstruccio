@@ -1,0 +1,126 @@
+@model foro.Web.DTOs.TemaDeleteDto
+
+@{
+    ViewData["Title"] = Model.Titulo;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+     <nav aria-label="breadcrumb">
+     <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a asp-action="Index">Foro</a></li>
+       <li class="breadcrumb-item active" aria-current="page">@Model.Titulo</li>
+  </ol>
+   </nav>
+        </div>
+    </div>
+
+    @* Mensajes de éxito o error *@
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle"></i> @TempData["Success"]
+       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+  {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-12">
+     <div class="card shadow">
+   <div class="card-header bg-primary text-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">
+    <i class="bi bi-chat-left-text"></i> @Model.Titulo
+    </h3>
+    <div class="btn-group" role="group">
+          <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+  <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger btn-sm">
+           <i class="bi bi-trash"></i> Eliminar
+        </a>
+       </div>
+       </div>
+  </div>
+        <div class="card-body">
+     <div class="row mb-3">
+  <div class="col-md-12">
+   <span class="badge bg-info me-2">
+          <i class="bi bi-folder"></i> @Model.CategoriaNombre
+</span>
+   <span class="badge bg-secondary me-2">
+        <i class="bi bi-person"></i> @Model.UsuarioNombre
+       </span>
+          <span class="badge bg-secondary me-2">
+ <i class="bi bi-calendar3"></i> @Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")
+    </span>
+     <span class="badge bg-secondary">
+  <i class="bi bi-chat-left-dots"></i> @Model.NumeroMensajes mensajes
+    </span>
+   </div>
+  </div>
+
+      <hr>
+
+      <div class="contenido-tema">
+    @Html.Raw(System.Net.WebUtility.HtmlEncode(Model.Contenido).Replace("\n", "<br>"))
+    </div>
+    </div>
+       </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-chat-dots"></i> Mensajes (@Model.NumeroMensajes)</h4>
+    </div>
+
+@if (Model.NumeroMensajes > 0)
+      {
+     <div class="alert alert-info" role="alert">
+    <i class="bi bi-info-circle"></i> 
+     La funcionalidad de visualización de mensajes individuales se implementará en una versión futura.
+     </div>
+      }
+ else
+      {
+   <div class="alert alert-secondary text-center" role="alert">
+       <i class="bi bi-chat-left fs-1 d-block mb-3 text-muted"></i>
+          <h5>No hay mensajes todavía</h5>
+   <p>Sé el primero en comentar este tema.</p>
+   </div>
+      }
+        </div>
+    </div>
+
+    <div class="row mt-4">
+   <div class="col-md-12 text-center">
+   <a asp-action="Index" class="btn btn-outline-primary btn-lg">
+  <i class="bi bi-arrow-left-circle"></i> Volver al Listado
+     </a>
+      </div>
+ </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .contenido-tema {
+     font-size: 1.1rem;
+      line-height: 1.6;
+   padding: 1rem;
+  background-color: #f8f9fa;
+    border-radius: 0.25rem;
+   min-height: 150px;
+    }
+    </style>
+}

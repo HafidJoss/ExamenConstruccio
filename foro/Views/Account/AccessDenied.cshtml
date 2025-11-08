@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Acceso Denegado";
+}
+
+<div class="container">
+  <div class="row justify-content-center mt-5">
+   <div class="col-md-8 col-lg-6">
+   <div class="card shadow text-center">
+       <div class="card-body p-5">
+ <div class="mb-4">
+            <i class="bi bi-shield-x" style="font-size: 5rem; color: #dc3545;"></i>
+       </div>
+           
+          <h2 class="card-title text-danger mb-3">Acceso Denegado</h2>
+        
+     <p class="card-text lead mb-4">
+No tienes permisos para acceder a esta página.
+   </p>
+
+      <p class="text-muted mb-4">
+       Es posible que necesites permisos especiales para ver esta página.
+         Si crees que esto es un error, contacta al administrador del foro.
+   </p>
+
+       <div class="d-grid gap-2 d-md-block">
+  <a asp-controller="Home" asp-action="Index" class="btn btn-primary me-2">
+       <i class="bi bi-house"></i> Ir al Inicio
+           </a>
+<a asp-controller="Temas" asp-action="Index" class="btn btn-outline-secondary">
+     <i class="bi bi-chat-dots"></i> Ver Foro
+   </a>
+   </div>
+      </div>
+      </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}
